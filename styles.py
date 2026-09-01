@@ -129,27 +129,25 @@ def get_base_css() -> str:
     return """<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ── Reset Streamlit chrome ────────────────────────────── */
-#MainMenu, footer,
-[data-testid="stToolbar"],
-.stDeployButton { display:none !important; visibility:hidden !important }
+/* ── Reset Streamlit chrome (keeping sidebar toggle visible) ─────────── */
+#MainMenu, footer, .stDeployButton { 
+    display: none !important; 
+    visibility: hidden !important; 
+}
 
-header { 
-    background: transparent !important; 
-    pointer-events: none !important; 
-}
-header * { 
-    pointer-events: auto !important; 
-}
-[data-testid="collapsedControl"], 
+/* Ensure the collapsed sidebar toggle button stays visible and styled */
 [data-testid="stSidebarCollapsedControl"] {
     display: flex !important;
     visibility: visible !important;
-    opacity: 1 !important;
+    color: #ffffff !important;
     z-index: 999999 !important;
-    pointer-events: auto !important;
-    background: rgba(0,0,0,0.2) !important;
-    border-radius: 5px !important;
+}
+
+[data-testid="stSidebarCollapsedControl"] button {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .stApp {

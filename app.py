@@ -101,7 +101,14 @@ def _resolve_initial_location():
 
 def _sidebar():
     with st.sidebar:
-        st.markdown("### ⛅ Weather")
+        c1, c2 = st.columns([4, 1])
+        with c1:
+            st.markdown("### ⛅ Weather")
+        with c2:
+            if st.button("✕", key="close_sidebar", help="Collapse sidebar"):
+                st.session_state["sidebar_expanded"] = False
+                st.rerun()
+
         city = st.text_input("Search city", placeholder="Enter city name…",
                              label_visibility="collapsed")
 
@@ -128,7 +135,6 @@ def _sidebar():
             else:
                 st.warning("Could not detect location.")
 
-        # Unit toggle
         st.divider()
         is_f = st.toggle("Show in °F", value=(st.session_state["units"] == "imperial"))
         new_unit = "imperial" if is_f else "metric"
@@ -136,7 +142,6 @@ def _sidebar():
             st.session_state["units"] = new_unit
             st.rerun()
 
-        # Recent locations
         recents = st.session_state.get("recent", [])
         if recents:
             st.divider()
@@ -147,6 +152,14 @@ def _sidebar():
                     if geo:
                         _set_location(geo)
                         st.rerun()
+
+
+def _reexpand_button():
+    """Call this in the main body, before other content, when sidebar is collapsed."""
+    if not st.session_state.get("sidebar_expanded", True):
+        if st.button("☰ Weather", key="reexpand_sidebar"):
+            st.session_state["sidebar_expanded"] = True
+            st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -523,8 +536,11 @@ def main():
     # Inject base CSS immediately
     st.markdown(get_base_css(), unsafe_allow_html=True)
 
-    # Sidebar (may trigger rerun)
-    _sidebar()
+    # Sidebar logic (custom collapse/expand)
+    if st.session_state.get("sidebar_expanded", True):
+        _sidebar()
+    else:
+        _reexpand_button()
 
     # Resolve location on first visit
     _resolve_initial_location()
