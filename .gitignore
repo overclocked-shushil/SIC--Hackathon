@@ -1,0 +1,120 @@
+# ──────────────────────────────────────────────
+# Python Bytecode & Compiled Files
+# ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyo
+*.pyd
+
+# ──────────────────────────────────────────────
+# Virtual Environments
+# ──────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+.conda/
+
+# ──────────────────────────────────────────────
+# Secrets & Environment Variables
+# ──────────────────────────────────────────────
+.env
+.env.*
+*.env
+.env.local
+.env.development
+.env.staging
+.env.production
+secrets.*
+config.local.py
+*.secret
+
+# ──────────────────────────────────────────────
+# API Keys & Credentials
+# ──────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+service-account*.json
+credentials.json
+token.json
+oauth*.json
+*_credentials.py
+*_secrets.py
+
+# ──────────────────────────────────────────────
+# Streamlit Secrets
+# ──────────────────────────────────────────────
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# ──────────────────────────────────────────────
+# IDE & Editor Files
+# ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ──────────────────────────────────────────────
+# OS Generated Files
+# ──────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ──────────────────────────────────────────────
+# Distribution / Build
+# ──────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+*.whl
+
+# ──────────────────────────────────────────────
+# Testing & Coverage
+# ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.tox/
+.nox/
+
+# ──────────────────────────────────────────────
+# Jupyter Notebooks
+# ──────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ──────────────────────────────────────────────
+# Logs & Databases
+# ──────────────────────────────────────────────
+*.log
+logs/
+*.sqlite3
+*.db
+
+# ──────────────────────────────────────────────
+# Misc
+# ──────────────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+*.cache
