@@ -49,9 +49,9 @@ oauth*.json
 *_secrets.py
 
 # ──────────────────────────────────────────────
-# Streamlit Secrets (CRITICAL — never commit!)
+# Streamlit Secrets (Intentionally tracking secrets.toml)
 # ──────────────────────────────────────────────
-.streamlit/secrets.toml
+# .streamlit/secrets.toml
 
 # ──────────────────────────────────────────────
 # IDE & Editor Files
