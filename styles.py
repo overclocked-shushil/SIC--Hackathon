@@ -372,12 +372,15 @@ hr { border-color: rgba(255,255,255,0.1) !important; }
 def card(icon: str, title: str, body: str, extra: str = "") -> str:
     """Wrap content in a glassmorphism card div."""
     cls = f"wcard {extra}".strip()
-    return (
+    html = (
         f'<div class="{cls}">'
         f'<div class="wcard-hdr">{icon} {title}</div>'
         f'{body}'
         f'</div>'
     )
+    # Strip newlines and indentation to prevent Streamlit from 
+    # parsing indented SVG/HTML as Markdown code blocks.
+    return " ".join(line.strip() for line in html.splitlines())
 
 
 def compass_svg(deg: float, speed: float, unit: str = "kph") -> str:
