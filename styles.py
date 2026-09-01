@@ -59,9 +59,11 @@ def get_base_css() -> str:
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ── Reset Streamlit chrome ────────────────────────────── */
-#MainMenu, footer, header,
+#MainMenu, footer,
 [data-testid="stToolbar"],
 .stDeployButton { display:none !important; visibility:hidden !important }
+
+header { background: transparent !important; }
 
 .stApp {
     font-family: -apple-system, "SF Pro Display", "Inter", "Segoe UI", Helvetica, sans-serif;
