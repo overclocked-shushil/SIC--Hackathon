@@ -321,6 +321,10 @@ def _map_card(loc: dict):
             tooltip="My Location",
             icon=folium.Icon(color="blue", icon="cloud"),
         ).add_to(m)
+        
+        folium.TileLayer(
+            tiles='OpenStreetMap'
+        ).add_to(m)
 
         st.markdown('<div class="wcard-hdr">🗺 WIND MAP</div>', unsafe_allow_html=True)
         st_folium(m, height=320, use_container_width=True,

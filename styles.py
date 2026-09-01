@@ -134,7 +134,23 @@ def get_base_css() -> str:
 [data-testid="stToolbar"],
 .stDeployButton { display:none !important; visibility:hidden !important }
 
-header { background: transparent !important; }
+header { 
+    background: transparent !important; 
+    pointer-events: none !important; 
+}
+header * { 
+    pointer-events: auto !important; 
+}
+[data-testid="collapsedControl"], 
+[data-testid="stSidebarCollapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+    background: rgba(0,0,0,0.2) !important;
+    border-radius: 5px !important;
+}
 
 .stApp {
     font-family: -apple-system, "SF Pro Display", "Inter", "Segoe UI", Helvetica, sans-serif;
