@@ -259,7 +259,7 @@ def _forecast_card(weather: dict, tz: int):
         day = day_label(d["dt"], tz)
         desc = d["weather"][0]["description"].title()
         with st.expander(f"{day} — {desc}"):
-            ec1, ec2, ec3, ec4 = st.columns(4)
+            ec1, ec2, ec3, ec4 = st.columns([1, 1, 1.5, 1])
             ec1.metric("🌡 High", fmt_temp(d["temp"]["max"]))
             ec2.metric("🌡 Low", fmt_temp(d["temp"]["min"]))
             ec3.metric("💨 Wind", f"{round(d.get('wind_speed', 0))} kph")
