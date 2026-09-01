@@ -360,5 +360,5 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 <p align="center">
-  Built with ❤️ for the SIC Hackathon
+  Built with ❤️ for the SIC Hackathon Team - Dew Point
 </p>
