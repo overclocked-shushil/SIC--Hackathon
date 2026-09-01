@@ -127,13 +127,42 @@ def get_background_css(condition_id: int, icon: str) -> str:
 
 def get_base_css() -> str:
     return """<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
 
 /* ── Reset Streamlit chrome (keeping sidebar toggle visible) ─────────── */
 #MainMenu, footer, .stDeployButton { 
     display: none !important; 
     visibility: hidden !important; 
 }
+
+/* ── Weatherly branding in Streamlit top bar ───────────── */
+[data-testid="stHeader"] {
+    background: rgba(10, 15, 25, 0.35) !important;
+    backdrop-filter: blur(24px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+[data-testid="stHeader"]::before {
+    content: "Weatherly";
+    position: absolute;
+    left: 58px;
+    top: 50%;
+    transform: translateY(-50%) skewX(-8deg);
+
+    font-family: "Manrope", "Inter", sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: -0.8px;
+
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 12px rgba(255,255,255,0.18);
+
+    pointer-events: none;
+    z-index: 999999;
+}
+
 
 /* Ensure the collapsed sidebar toggle button stays visible and styled */
 [data-testid="stSidebarCollapsedControl"] {
