@@ -49,7 +49,7 @@ from utils import (
 )
 
 # ── Page config ──────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Weather Dashboard", page_icon="⛅", layout="wide")
+st.set_page_config(page_title="Weatherly", page_icon="⛅", layout="wide")
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
 _DEFAULT = dict(name="Bengaluru", lat=12.9716, lon=77.5946, country="IN")
