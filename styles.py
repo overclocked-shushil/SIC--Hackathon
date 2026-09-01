@@ -560,3 +560,61 @@ def moon_emoji(phase: float) -> str:
     if phase < 0.78:
         return "🌗"
     return "🌘"
+
+
+# ── Recommendations Helpers ──────────────────────────────────────────────────
+
+def get_clothing_recommendation(temp_c: float, condition_id: int, is_day: bool = True) -> dict:
+    items = []
+    if temp_c <= 0:
+        summary = "Freezing cold"
+        items.extend(["Heavy winter coat", "Thermal innerwear", "Woolen cap & gloves", "Insulated boots"])
+    elif 0 < temp_c <= 12:
+        summary = "Cold weather"
+        items.extend(["Warm jacket or fleece", "Sweater", "Long trousers/jeans", "Closed shoes"])
+    elif 12 < temp_c <= 20:
+        summary = "Mild / Cool"
+        items.extend(["Light jacket or cardigan", "Long sleeves / Hoodie", "Comfortable pants"])
+    elif 20 < temp_c <= 28:
+        summary = "Warm & Pleasant"
+        items.extend(["T-shirt or cotton shirt", "Light trousers or shorts", "Sneakers / Sandals"])
+    else:
+        summary = "Hot weather"
+        items.extend(["Breathable linen/cotton clothes", "Shorts / Summer dress", "Sunglasses", "Sun cap"])
+
+    if 200 <= condition_id <= 531:
+        items.append("Waterproof raincoat or Umbrella")
+        items.append("Water-resistant footwear")
+    elif 600 <= condition_id <= 622:
+        items.append("Waterproof snow boots")
+        items.append("Heavy scarf & gloves")
+    elif condition_id == 800 and temp_c > 22 and is_day:
+        items.append("Sunscreen (SPF 30+)")
+
+    return {"summary": summary, "items": items}
+
+
+def get_activity_recommendations(temp_c: float, condition_id: int, wind_speed_kph: float = 0.0) -> dict:
+    outdoor, indoor = [], []
+    is_severe = (200 <= condition_id <= 232) or (502 <= condition_id <= 531) or (611 <= condition_id <= 622) or (wind_speed_kph > 40)
+
+    if is_severe:
+        outdoor.append("⚠️ Outdoor activities not recommended (Severe weather)")
+        indoor.extend(["Visit a museum or art gallery", "Go to a movie theater", "Board games at a cafe", "Indoor shopping mall", "Indoor sports (Bowling, Gym)"])
+    elif 300 <= condition_id <= 501:
+        outdoor.extend(["Short nature walk with umbrella", "Scenic drive", "Moody rainy photography"])
+        indoor.extend(["Cozy coffee shop visit", "Cooking / Baking at home", "Indoor aquarium visit"])
+    elif 600 <= condition_id <= 602:
+        outdoor.extend(["Building a snowman", "Sledding or Skiing", "Winter photography walk"])
+        indoor.extend(["Ice skating at an indoor rink", "Hot drinks near a fireplace", "Thermal spa visit"])
+    elif condition_id >= 800 and 15 <= temp_c <= 28:
+        outdoor.extend(["Jogging or Cycling", "Park Picnic", "Sightseeing & Walking tours", "Outdoor sports (Tennis, Football)", "Hiking / Trekking"])
+        indoor.extend(["Indoor gym session", "Library or bookstore visit"])
+    elif temp_c > 28:
+        outdoor.extend(["Swimming pool visit", "Water sports (Early morning/evening)", "Shaded park lounge"])
+        indoor.extend(["Air-conditioned mall", "Museum visit", "Indoor arcade"])
+    else:
+        outdoor.extend(["Brisk outdoor walk", "City sightseeing", "Outdoor photography"])
+        indoor.extend(["Visit a local indoor market", "Board game cafe"])
+
+    return {"outdoor": outdoor, "indoor": indoor}

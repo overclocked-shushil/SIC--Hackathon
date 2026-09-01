@@ -20,8 +20,10 @@ from api import (
 from styles import (
     card,
     compass_svg,
+    get_activity_recommendations,
     get_background_css,
     get_base_css,
+    get_clothing_recommendation,
     moon_emoji,
     pressure_gauge_svg,
     sun_arc_svg,
@@ -64,6 +66,8 @@ def _init_state():
         st.session_state["recent"] = []
     if "units" not in st.session_state:
         st.session_state["units"] = "metric"
+    if "active_view" not in st.session_state:
+        st.session_state["active_view"] = "dashboard"
 
 
 def _set_location(loc: dict):
@@ -101,16 +105,9 @@ def _resolve_initial_location():
 
 def _sidebar():
     with st.sidebar:
-        c1, c2 = st.columns([4, 1])
-        with c1:
-            st.markdown("### ⛅ Weather")
-        with c2:
-            if st.button("✕", key="close_sidebar", help="Collapse sidebar"):
-                st.session_state["sidebar_expanded"] = False
-                st.rerun()
-
+        st.markdown("### ⛅ Weather")
         city = st.text_input("Search city", placeholder="Enter city name…",
-                             label_visibility="collapsed")
+                            label_visibility="collapsed")
 
         c1, c2 = st.columns(2)
         with c1:
@@ -135,6 +132,18 @@ def _sidebar():
             else:
                 st.warning("Could not detect location.")
 
+        # Navigation
+        st.divider()
+        st.markdown("### 📍 Navigation")
+        if st.button("📊 Weather Dashboard", use_container_width=True):
+            st.session_state["active_view"] = "dashboard"
+            st.rerun()
+
+        if st.button("💡 Insights & Activities", use_container_width=True):
+            st.session_state["active_view"] = "insights"
+            st.rerun()
+
+        # Unit toggle
         st.divider()
         is_f = st.toggle("Show in °F", value=(st.session_state["units"] == "imperial"))
         new_unit = "imperial" if is_f else "metric"
@@ -142,6 +151,7 @@ def _sidebar():
             st.session_state["units"] = new_unit
             st.rerun()
 
+        # Recent locations
         recents = st.session_state.get("recent", [])
         if recents:
             st.divider()
@@ -152,14 +162,6 @@ def _sidebar():
                     if geo:
                         _set_location(geo)
                         st.rerun()
-
-
-def _reexpand_button():
-    """Call this in the main body, before other content, when sidebar is collapsed."""
-    if not st.session_state.get("sidebar_expanded", True):
-        if st.button("☰ Weather", key="reexpand_sidebar"):
-            st.session_state["sidebar_expanded"] = True
-            st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -198,7 +200,6 @@ def _hourly(weather: dict, tz: int):
         pop_str = f"{round(pop * 100)}%" if pop > 0.05 else ""
         temp = fmt_temp(h["temp"])
 
-        # Sunset/sunrise markers
         items_html += f"""
         <div class="hourly-item">
             <div class="h-time">{t}</div>
@@ -223,7 +224,6 @@ def _forecast_card(weather: dict, tz: int):
     if not daily:
         return
 
-    # Weekly min/max for bar scaling
     all_lo = min(d["temp"]["min"] for d in daily)
     all_hi = max(d["temp"]["max"] for d in daily)
     span = all_hi - all_lo or 1
@@ -255,7 +255,6 @@ def _forecast_card(weather: dict, tz: int):
     body = f'<div>{rows}</div>'
     st.markdown(card("📅", "10-DAY FORECAST", body, "wcard-lg"), unsafe_allow_html=True)
 
-    # Expandable day details
     for d in daily:
         day = day_label(d["dt"], tz)
         desc = d["weather"][0]["description"].title()
@@ -333,10 +332,6 @@ def _map_card(loc: dict):
             popup=loc["name"],
             tooltip="My Location",
             icon=folium.Icon(color="blue", icon="cloud"),
-        ).add_to(m)
-        
-        folium.TileLayer(
-            tiles='OpenStreetMap'
         ).add_to(m)
 
         st.markdown('<div class="wcard-hdr">🗺 WIND MAP</div>', unsafe_allow_html=True)
@@ -510,7 +505,6 @@ def _averages_card(daily: list):
         return
 
     today_hi = daily[0]["temp"]["max"]
-    # Use the week's average as a rough "average" (since historical data needs a separate API)
     week_avg = sum(d["temp"]["max"] for d in daily) / len(daily)
     diff = today_hi - week_avg
     sign = "+" if diff >= 0 else ""
@@ -536,11 +530,8 @@ def main():
     # Inject base CSS immediately
     st.markdown(get_base_css(), unsafe_allow_html=True)
 
-    # Sidebar logic (custom collapse/expand)
-    if st.session_state.get("sidebar_expanded", True):
-        _sidebar()
-    else:
-        _reexpand_button()
+    # Sidebar (may trigger rerun)
+    _sidebar()
 
     # Resolve location on first visit
     _resolve_initial_location()
@@ -568,50 +559,89 @@ def main():
     icon_code = cur["weather"][0]["icon"]
     st.markdown(get_background_css(cond_id, icon_code), unsafe_allow_html=True)
 
-    # ── Header ───────────────────────────────────────────────────────────────
-    _header(weather, loc, tz)
+    # ── Render View based on active_view ─────────────────────────────────────
+    if st.session_state.get("active_view") == "insights":
+        # INSIGHTS & ACTIVITIES VIEW
+        st.markdown(f"<h2 style='text-align: center;'>Weather Insights for {loc['name']}</h2>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Hourly strip ─────────────────────────────────────────────────────────
-    _hourly(weather, tz)
+        current_temp = cur["temp"]
+        condition_code = cond_id
+        wind_speed = cur.get("wind_speed", 0)
+        is_day = not icon_code.endswith("n")
 
-    # ── Three-column grid: Forecast | AQI+Wind | Map ─────────────────────────
-    col_left, col_mid, col_right = st.columns([3, 3, 3])
+        # Convert imperial to metric if needed for the logic function limits
+        temp_c = (current_temp - 32) * 5 / 9 if units == "imperial" else current_temp
+        wind_kph = wind_speed * 1.60934 if units == "imperial" else wind_speed
 
-    with col_left:
-        _forecast_card(weather, tz)
+        clothing = get_clothing_recommendation(temp_c, condition_code, is_day)
+        activities = get_activity_recommendations(temp_c, condition_code, wind_kph)
 
-    with col_mid:
-        _aqi_card(aqi_data)
-        _wind_card(cur)
+        col1, col2 = st.columns(2)
 
-    with col_right:
-        _map_card(loc)
+        with col1:
+            items_html = "".join([f"<li style='margin-bottom: 6px;'>{item}</li>" for item in clothing["items"]])
+            clothing_body = f"""
+            <div class="wcard-lbl">{clothing['summary']}</div>
+            <ul style="padding-left: 18px; color: rgba(255,255,255,0.85); font-size: 14px;">
+                {items_html}
+            </ul>
+            """
+            st.markdown(card("👕", "Clothing Recommendation", clothing_body, extra="wcard-lg"), unsafe_allow_html=True)
 
-    # ── Four-card row: UV | Sunset | Feels Like | Precipitation ──────────────
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-    r1c1, r1c2, r1c3, r1c4 = st.columns(4)
-    with r1c1:
-        _uv_card(cur, daily_today, tz)
-    with r1c2:
-        _sunset_card(cur, daily_today, tz)
-    with r1c3:
-        _feelslike_card(cur)
-    with r1c4:
-        _precip_card(daily)
+        with col2:
+            outdoor_html = "".join([f"<li style='margin-bottom: 6px;'>{act}</li>" for act in activities["outdoor"]])
+            indoor_html = "".join([f"<li style='margin-bottom: 6px;'>{act}</li>" for act in activities["indoor"]])
 
-    # ── Five-card row: Moon | Humidity | Visibility | Pressure | Averages ────
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-    r2c1, r2c2, r2c3, r2c4, r2c5 = st.columns(5)
-    with r2c1:
-        _moon_card(daily_today, tz)
-    with r2c2:
-        _humidity_card(cur)
-    with r2c3:
-        _visibility_card(cur)
-    with r2c4:
-        _pressure_card(cur)
-    with r2c5:
-        _averages_card(daily)
+            activities_body = f"""
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #5ac8fa;">🌲 Outdoor</div>
+            <ul style="padding-left: 18px; color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 12px;">
+                {outdoor_html}
+            </ul>
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #ffd60a;">🏠 Indoor</div>
+            <ul style="padding-left: 18px; color: rgba(255,255,255,0.85); font-size: 13px;">
+                {indoor_html}
+            </ul>
+            """
+            st.markdown(card("🚴", "Suggested Activities", activities_body, extra="wcard-lg"), unsafe_allow_html=True)
+
+    else:
+        # MAIN WEATHER DASHBOARD VIEW
+        _header(weather, loc, tz)
+        _hourly(weather, tz)
+
+        col_left, col_mid, col_right = st.columns([3, 3, 3])
+        with col_left:
+            _forecast_card(weather, tz)
+        with col_mid:
+            _aqi_card(aqi_data)
+            _wind_card(cur)
+        with col_right:
+            _map_card(loc)
+
+        st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+        r1c1, r1c2, r1c3, r1c4 = st.columns(4)
+        with r1c1:
+            _uv_card(cur, daily_today, tz)
+        with r1c2:
+            _sunset_card(cur, daily_today, tz)
+        with r1c3:
+            _feelslike_card(cur)
+        with r1c4:
+            _precip_card(daily)
+
+        st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+        r2c1, r2c2, r2c3, r2c4, r2c5 = st.columns(5)
+        with r2c1:
+            _moon_card(daily_today, tz)
+        with r2c2:
+            _humidity_card(cur)
+        with r2c3:
+            _visibility_card(cur)
+        with r2c4:
+            _pressure_card(cur)
+        with r2c5:
+            _averages_card(daily)
 
     # ── Footer ───────────────────────────────────────────────────────────────
     st.markdown(
