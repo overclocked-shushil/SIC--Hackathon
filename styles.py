@@ -1,34 +1,95 @@
 """
 styles.py
-All CSS strings, dynamic background selector, and reusable HTML helpers.
+All CSS strings, dynamic background selector with rotating Unsplash images, and reusable HTML helpers.
 """
 
 from __future__ import annotations
+import random
 
 
-# ── Dynamic background ──────────────────────────────────────────────────────
+def clean_html(html_str: str) -> str:
+    """Strips leading line indentation to prevent Markdown from turning HTML into code blocks."""
+    return "\n".join(line.strip() for line in html_str.splitlines())
 
-_BG = {
-    # (condition_id_range, is_night) → CSS gradient
-    "clear_d":       "linear-gradient(180deg, #3a7bd5 0%, #5b9ee1 35%, #87bcea 65%, #b5d6f2 100%)",
-    "clear_n":       "linear-gradient(180deg, #0b1628 0%, #162544 40%, #1e3355 70%, #2a4066 100%)",
-    "fewclouds_d":   "linear-gradient(180deg, #6a8caf 0%, #8aabc8 40%, #a8c4db 100%)",
-    "fewclouds_n":   "linear-gradient(180deg, #1a2a45 0%, #2a3d5c 50%, #3a5070 100%)",
-    "overcast_d":    "linear-gradient(180deg, #74838f 0%, #8a99a5 40%, #a0afbb 100%)",
-    "overcast_n":    "linear-gradient(180deg, #2a303a 0%, #3a4250 50%, #4a5260 100%)",
-    "rain_d":        "linear-gradient(180deg, #4a5c6a 0%, #5d707e 40%, #708494 100%)",
-    "rain_n":        "linear-gradient(180deg, #1a2430 0%, #253340 50%, #304252 100%)",
-    "thunder_d":     "linear-gradient(180deg, #35293f 0%, #46375a 50%, #574470 100%)",
-    "thunder_n":     "linear-gradient(180deg, #15101e 0%, #221a30 50%, #2f2442 100%)",
-    "snow_d":        "linear-gradient(180deg, #a8b8c8 0%, #c0d0e0 40%, #d8e4f0 100%)",
-    "snow_n":        "linear-gradient(180deg, #2a3545 0%, #3a4a5a 50%, #506070 100%)",
-    "fog_d":         "linear-gradient(180deg, #888890 0%, #9a9aa2 40%, #b0b0b8 100%)",
-    "fog_n":         "linear-gradient(180deg, #2a2a32 0%, #3a3a44 50%, #4a4a55 100%)",
+
+# ── Dynamic Background Image Pools (3 images per condition) ──────────────────
+
+_BG_IMAGES = {
+    "clear_d": [
+        "https://images.unsplash.com/photo-1622396481328-9b1b78cdd9fd?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "clear_n": [
+        "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1532978379173-523e16f371f2?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "fewclouds_d": [
+        "https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517685352821-92cf88aee5a5?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "fewclouds_n": [
+        "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "overcast_d": [
+        "https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "overcast_n": [
+        "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "rain_d": [
+        "https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1428592953211-077101b2021b?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "rain_n": [
+        "https://images.unsplash.com/photo-1508873696983-2df515122519?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1501999635878-71cb5379c2d4?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "thunder_d": [
+        "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1511289081-d06d54790e06?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1594156596782-656c93e4d504?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "thunder_n": [
+        "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1511289081-d06d54790e06?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "snow_d": [
+        "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517299321531-479908092017?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1491002052546-bf38f186af56?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "snow_n": [
+        "https://images.unsplash.com/photo-1418985991508-e47386d96a71?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "fog_d": [
+        "https://images.unsplash.com/photo-1487621167305-5d248087c724?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1509803874385-db7c23652552?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?q=80&w=1920&auto=format&fit=crop",
+    ],
+    "fog_n": [
+        "https://images.unsplash.com/photo-1487621167305-5d248087c724?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1509803874385-db7c23652552?q=80&w=1920&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?q=80&w=1920&auto=format&fit=crop",
+    ],
 }
 
 
 def get_background_css(condition_id: int, icon: str) -> str:
-    """Map OWM condition code + icon suffix to a CSS gradient."""
+    """Map OWM condition code + icon suffix to a random background image URL from its pool."""
     n = "n" if icon.endswith("n") else "d"
 
     if condition_id == 800:
@@ -48,8 +109,18 @@ def get_background_css(condition_id: int, icon: str) -> str:
     else:
         key = f"overcast_{n}"
 
-    grad = _BG[key]
-    return f'<style>.stApp{{background:{grad} !important;background-attachment:fixed}}</style>'
+    images = _BG_IMAGES.get(key, _BG_IMAGES["clear_d"])
+    img_url = random.choice(images)
+
+    return f"""<style>
+    .stApp {{
+        background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url("{img_url}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+    }}
+    </style>"""
 
 
 # ── Base CSS ─────────────────────────────────────────────────────────────────
@@ -372,30 +443,25 @@ hr { border-color: rgba(255,255,255,0.1) !important; }
 def card(icon: str, title: str, body: str, extra: str = "") -> str:
     """Wrap content in a glassmorphism card div."""
     cls = f"wcard {extra}".strip()
-    html = (
+    raw = (
         f'<div class="{cls}">'
         f'<div class="wcard-hdr">{icon} {title}</div>'
         f'{body}'
         f'</div>'
     )
-    # Strip newlines and indentation to prevent Streamlit from 
-    # parsing indented SVG/HTML as Markdown code blocks.
-    return " ".join(line.strip() for line in html.splitlines())
+    return clean_html(raw)
 
 
 def compass_svg(deg: float, speed: float, unit: str = "kph") -> str:
     """SVG compass dial pointing in wind direction."""
     import math
-    # Arrow endpoint (from center, pointing in the direction wind blows TO)
-    # Wind direction is where wind comes FROM, arrow should point opposite
     rad = math.radians(deg)
     ax = 60 + 38 * math.sin(rad)
     ay = 60 - 38 * math.cos(rad)
-    # Arrow tail
     tx = 60 - 12 * math.sin(rad)
     ty = 60 + 12 * math.cos(rad)
 
-    return f"""
+    raw = f"""
     <svg viewBox="0 0 120 120" width="110" height="110" style="display:block;margin:8px auto">
       <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
       <circle cx="60" cy="60" r="3" fill="rgba(255,255,255,0.3)"/>
@@ -409,22 +475,21 @@ def compass_svg(deg: float, speed: float, unit: str = "kph") -> str:
       <text x="60" y="56" text-anchor="middle" fill="white" font-size="18" font-weight="600">{round(speed)}</text>
       <text x="60" y="72" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">{unit}</text>
     </svg>"""
+    return clean_html(raw)
 
 
 def sun_arc_svg(fraction: float, sunrise_str: str, sunset_str: str) -> str:
     """SVG sun position arc."""
     import math
-    # Arc from (20,70) to (180,70), peak at (100,15)
-    # Parametric: x = 20 + 160*t, y = 70 - 55*sin(pi*t)
     t = max(0.0, min(1.0, fraction))
     sx = 20 + 160 * t
     sy = 70 - 55 * math.sin(math.pi * t)
     is_up = 0 < t < 1
 
-    sun_color = "#FFD700" if is_up else "rgba(255,255,255,0.3)"
+    sun_color = "#FFD700" if is_up else "rgba(255,215,0,0.3)"
     glow = f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="12" fill="rgba(255,215,0,0.15)"/>' if is_up else ""
 
-    return f"""
+    raw = f"""
     <svg viewBox="0 0 200 90" width="100%" height="70" style="margin:8px 0">
       <defs>
         <linearGradient id="arcg" x1="0" y1="0" x2="1" y2="0">
@@ -440,26 +505,26 @@ def sun_arc_svg(fraction: float, sunrise_str: str, sunset_str: str) -> str:
       <text x="20" y="85" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">{sunrise_str}</text>
       <text x="180" y="85" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">{sunset_str}</text>
     </svg>"""
+    return clean_html(raw)
 
 
 def pressure_gauge_svg(hpa: int) -> str:
     """Simple arc gauge for pressure."""
     import math
-    # Normalize: typical range 980-1050 hPa
     norm = max(0, min(1, (hpa - 970) / 80))
-    # Arc from -140° to +140° (280° sweep)
     angle = -140 + norm * 280
     rad = math.radians(angle - 90)
     ix = 60 + 36 * math.cos(rad)
     iy = 55 + 36 * math.sin(rad)
 
-    return f"""
+    raw = f"""
     <svg viewBox="0 0 120 75" width="100" height="65" style="display:block;margin:6px auto">
       <path d="M 18 65 A 44 44 0 0 1 102 65" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3" stroke-linecap="round"/>
       <circle cx="{ix:.1f}" cy="{iy:.1f}" r="4" fill="white"/>
       <text x="60" y="48" text-anchor="middle" fill="white" font-size="20" font-weight="500">{hpa}</text>
       <text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">hPa</text>
     </svg>"""
+    return clean_html(raw)
 
 
 def moon_emoji(phase: float) -> str:
