@@ -28,7 +28,7 @@ _TIMEOUT  = 10
 
 
 def _key() -> str:
-    return st.secrets.get("OPENWEATHER_API_KEY", "")
+    return "75d415ed1557fe2dabcb9b74c96a64c2"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
